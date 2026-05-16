@@ -1,0 +1,95 @@
+{
+  "rules": [
+    {
+      "pattern": "\\bDWORD\\b",
+      "replacement": "uint",
+      "description": "Windows DWORD type"
+    },
+    {
+      "pattern": "\\bHRESULT\\b",
+      "replacement": "int",
+      "description": "Windows HRESULT type"
+    },
+    {
+      "pattern": "\\bLPCTSTR\\b",
+      "replacement": "string",
+      "description": "Windows string pointer"
+    },
+    {
+      "pattern": "\\bassert\\s*\\(([^)]+)\\)",
+      "replacement": "Debug.Assert($1)",
+      "description": "Assert statements"
+    },
+    {
+      "pattern": "\\bprintf\\s*\\((.+?)\\);",
+      "replacement": "Console.WriteLine($1);",
+      "description": "Printf to Console.WriteLine"
+    },
+    {
+      "pattern": "\\bfor\\s*\\(\\s*auto\\s+(.+?)\\s*:\\s*(.+?)\\s*\\)",
+      "replacement": "foreach (var $1 in $2)",
+      "description": "Range-based for loop"
+    },
+    //{
+    //  "pattern": "\\bstd::function<(.+?)>",
+    //  "replacement": "Func<$1>",
+    //  "description": "std::function to Func/Action"
+    //},
+    //{
+    //  "pattern": "\\bstd::thread",
+    //  "replacement": "Thread",
+    //  "description": "Threading"
+    //},
+    //{
+    //  "pattern": "\\bstd::mutex",
+    //  "replacement": "Mutex",
+    //  "description": "Mutex"
+    //},
+    //{
+    //  "pattern": "\\bstd::lock_guard<(.+?)>",
+    //  "replacement": "lock",
+    //  "description": "Lock guard"
+    //},
+    {
+      "pattern": "#define\\s+(\\w+)\\s+(.+)",
+      "replacement": "const $1 = $2; // Review const type",
+      "description": "Simple macros to constants"
+    },
+    {
+      "pattern": "\\bvirtual\\s+~\\w+\\(\\)",
+      "replacement": "// Destructor - implement IDisposable if needed",
+      "description": "Virtual destructor"
+    },
+    //{
+    //  "pattern": "\\boverride\\b",
+    //  "replacement": "override",
+    //  "description": "Override keyword (keep as-is)"
+    //},
+    {
+      "pattern": "\\bfinal\\b",
+      "replacement": "sealed",
+      "description": "Final to sealed"
+    },
+    //{
+    //  "pattern": "\\bnamespace\\s+(\\w+)\\s*{",
+    //  "replacement": "namespace $1\n{",
+    //  "description": "Namespace formatting"
+    //}
+    {
+      "pattern": "\\bint32_t\\b",
+      "replacement": "int",
+      "description": "int32 to int"
+    },
+    {
+      "pattern": "\\( *void",
+      "replacement": "(",
+      "description": "Remove voids"
+    },
+    {
+      "pattern": "&",
+      "replacement": "",
+      "description": "Remove &"
+    }
+
+  ]
+}

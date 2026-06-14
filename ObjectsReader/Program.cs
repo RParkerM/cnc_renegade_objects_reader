@@ -13,7 +13,7 @@ string inputFilename = "objects2.ddb";
 string outputFilename = "objects3.ddb";
 #endif
 
-string filename = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Command & Conquer Renegade\\LevelEditor\\stock\\presets\\{inputFilename}";
+string filename = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Command & Conquer Renegade - OW3D\\LevelEditor\\stock\\presets\\{inputFilename}";
 var fileInfo = new FileInfo(filename);
 
 

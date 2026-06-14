@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ObjectsReaderUI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="ObjectsReaderUI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Width="1200" Height="700">
+
+    <DockPanel>
+
+        <!-- Menu bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." Click="OnOpenClicked" InputGesture="Ctrl+O"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Content + loading overlay stacked -->
+        <Grid>
+
+            <!-- Main content -->
+            <Grid ColumnDefinitions="320,4,*">
+
+                <!-- Left: Chunk tree -->
+                <TreeView Grid.Column="0"
+                          ItemsSource="{Binding RootNodes}"
+                          SelectedItem="{Binding SelectedNode}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem">
+                            <Setter Property="ItemsPanel">
+                                <Setter.Value>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TreeView.Styles>
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate x:DataType="vm:ChunkNodeViewModel"
+                                          ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Label}" Padding="2"/>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+
+                <!-- Splitter -->
+                <GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
+
+                <!-- Right: Properties panel -->
+                <DockPanel Grid.Column="2">
+                    <!-- Column headers -->
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="250,*" Background="#22000000">
+                        <TextBlock Grid.Column="0" Text="Property" FontWeight="Bold" Padding="6,4"/>
+                        <TextBlock Grid.Column="1" Text="Value"    FontWeight="Bold" Padding="6,4"/>
+                    </Grid>
+
+                    <!-- Property rows -->
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Properties}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PropertyRow">
+                                    <Grid ColumnDefinitions="250,*">
+                                        <Border Grid.Column="0" BorderBrush="#22000000" BorderThickness="0,0,1,1">
+                                            <TextBlock Text="{Binding Name}" Padding="6,2"
+                                                       FontFamily="Consolas,Courier New,monospace"/>
+                                        </Border>
+                                        <Border Grid.Column="1" BorderBrush="#22000000" BorderThickness="0,0,0,1">
+                                            <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Grid>
+
+            <!-- Loading overlay -->
+            <Panel IsVisible="{Binding IsLoading}" Background="#99000000">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                    <ProgressBar IsIndeterminate="True" Width="300"/>
+                    <TextBlock Text="Loading..." HorizontalAlignment="Center"
+                               Foreground="White" FontSize="14"/>
+                </StackPanel>
+            </Panel>
+
+        </Grid>
+
+    </DockPanel>
+
+</Window>

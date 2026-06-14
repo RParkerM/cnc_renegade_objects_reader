@@ -644,11 +644,14 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
         return retval;
     }
 
+    public static List<DefinitionClass> FileOrderDefinitions { get; } = [];
+
     private readonly List<UnknownChunk> _unknownDefinitions = [];
     protected bool Load_Objects(ChunkLoadClass cload)
     {
         bool retval = true;
 
+        FileOrderDefinitions.Clear();
         Dictionary<uint, int> definitionCounts = [];
 
         while (cload.Open_Chunk())
@@ -669,9 +672,10 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
 
                     //
                     //	Add this definition to our array
-                    //				
+                    //
                     Prepare_Definition_Array();
                     _SortedDefinitionArray.Add(definition);
+                    FileOrderDefinitions.Add(definition);
                     _DefinitionCount++;
                     var id = definition.Get_ID();
                 }

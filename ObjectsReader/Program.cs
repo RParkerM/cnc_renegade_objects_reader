@@ -13,7 +13,7 @@ string inputFilename = "objects2.ddb";
 string outputFilename = "objects3.ddb";
 #endif
 
-string filename = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Command & Conquer Renegade\\LevelEditor\\stock\\presets\\{inputFilename}";
+string filename = $"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Command & Conquer Renegade - OW3D\\LevelEditor\\stock\\presets\\{inputFilename}";
 var fileInfo = new FileInfo(filename);
 
 
@@ -75,6 +75,32 @@ foreach (var unknownChunk in unknownChunks)
 //defMgr.Save(chunkSave);
 //presetMgrChunk.Save(chunkSave);
 Console.WriteLine("Done.");
+
+newFile.Flush();
+newFile.Close();
+
+var originalBytes = File.ReadAllBytes(filename);
+var writtenBytes = File.ReadAllBytes(filename2);
+
+if (originalBytes.SequenceEqual(writtenBytes))
+{
+    Console.WriteLine("Files are bit identical.");
+}
+else
+{
+    Console.WriteLine($"Files differ! Original size: {originalBytes.Length}, Written size: {writtenBytes.Length}");
+    int firstDiff = -1;
+    for (int i = 0; i < Math.Min(originalBytes.Length, writtenBytes.Length); i++)
+    {
+        if (originalBytes[i] != writtenBytes[i])
+        {
+            firstDiff = i;
+            break;
+        }
+    }
+    if (firstDiff >= 0)
+        Console.WriteLine($"First differing byte at offset 0x{firstDiff:X} ({firstDiff}): original=0x{originalBytes[firstDiff]:X2}, written=0x{writtenBytes[firstDiff]:X2}");
+}
 
 
 //enum ChunkId

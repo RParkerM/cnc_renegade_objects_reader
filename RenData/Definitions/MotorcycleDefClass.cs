@@ -95,7 +95,7 @@ public partial class MotorcycleDefClass : WheeledVehicleDefClass
     private const int MOTORCYCLEDEF_CHUNK_WHEELEDVEHICLEDEF = 0x00516000;
     private const int MOTORCYCLEDEF_CHUNK_VARIABLES = 0x00516001;
 
-    private const int MOTORCYCLEDEF_VARIABLE_LEANK0 = 0x01;
-    private const int MOTORCYCLEDEF_VARIABLE_LEANK1 = 0x02;
+    private const int MOTORCYCLEDEF_VARIABLE_LEANK0 = 0x00;
+    private const int MOTORCYCLEDEF_VARIABLE_LEANK1 = 0x01;
 };
 

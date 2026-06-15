@@ -69,7 +69,9 @@ chunkSave.End_Chunk();
 
 foreach (var unknownChunk in unknownChunks)
 {
+    chunkSave.Begin_Chunk(unknownChunk.ChunkId);
     unknownChunk.Save(chunkSave);
+    chunkSave.End_Chunk();
 }
 
 Console.WriteLine("Done.");

@@ -42,7 +42,8 @@ public partial class MainWindowViewModel : ViewModelBase
             (chunks, defChildren) = await Task.Run(() =>
             {
                 var loaded = FileLoader.Load(path);
-                var children = DefinitionMgrClass.FileOrderDefinitions
+                var children = DefinitionMgrClass.FileOrderedItems
+                    .OfType<DefinitionClass>()
                     .Select(def => new ChunkNodeViewModel($"{def.Get_Name()} [{def.GetType().Name}]", def))
                     .ToList();
                 return (loaded, children);

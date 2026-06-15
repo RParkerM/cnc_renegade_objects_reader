@@ -546,8 +546,9 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
 
         //
         //	Free each of the definition objects
-        //	
+        //
         _SortedDefinitionArray.Clear();
+        _fileOrderedItems.Clear();
 
         _DefinitionCount = 0;
         return;
@@ -613,42 +614,36 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
     internal override string Name() { return "DefinitionMgrClass"; }
     protected bool Save_Objects(ChunkSaveClass csave)
     {
-        bool retval = true;
-
-        //
-        //	Loop through all the definition objects
-        //
-        for (int index = 0; index < _DefinitionCount; index++)
+        // Save in original file order, interleaving known and unknown definitions.
+        foreach (var item in _fileOrderedItems)
         {
-            DefinitionClass definition = _SortedDefinitionArray[index];
-            if (definition is not null && definition.Is_Save_Enabled())
+            switch (item)
             {
-
-                //
-                //	Save this definition object
-                //
-                csave.Begin_Chunk(definition.Get_Factory().Chunk_ID());
-                definition.Get_Factory().Save(csave, definition);
-                csave.End_Chunk();
+                case DefinitionClass def when def.Is_Save_Enabled():
+                    csave.Begin_Chunk(def.Get_Factory().Chunk_ID());
+                    def.Get_Factory().Save(csave, def);
+                    csave.End_Chunk();
+                    break;
+                case UnknownChunk unk:
+                    csave.Begin_Chunk(unk.ChunkId);
+                    unk.Save(csave);
+                    csave.End_Chunk();
+                    break;
             }
         }
 
-        foreach(var unknownDef in _unknownDefinitions)
-        {
-            csave.Begin_Chunk(unknownDef.ChunkId);
-            unknownDef.Save(csave);
-            csave.End_Chunk();
-        }
-
-
-        return retval;
+        return true;
     }
+
+    public static IReadOnlyList<object> FileOrderedItems => _fileOrderedItems;
+    private static readonly List<object> _fileOrderedItems = [];  // DefinitionClass | UnknownChunk, in file order
 
     private readonly List<UnknownChunk> _unknownDefinitions = [];
     protected bool Load_Objects(ChunkLoadClass cload)
     {
         bool retval = true;
 
+        _fileOrderedItems.Clear();
         Dictionary<uint, int> definitionCounts = [];
 
         while (cload.Open_Chunk())
@@ -669,9 +664,10 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
 
                     //
                     //	Add this definition to our array
-                    //				
+                    //
                     Prepare_Definition_Array();
                     _SortedDefinitionArray.Add(definition);
+                    _fileOrderedItems.Add(definition);
                     _DefinitionCount++;
                     var id = definition.Get_ID();
                 }
@@ -681,6 +677,7 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
                 UnknownChunk unknownDef = new();
                 unknownDef.Load(cload);
                 _unknownDefinitions.Add(unknownDef);
+                _fileOrderedItems.Add(unknownDef);
             }
 
             cload.Close_Chunk();

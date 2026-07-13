@@ -24,29 +24,37 @@
             <!-- Main content -->
             <Grid ColumnDefinitions="320,4,*">
 
-                <!-- Left: Chunk tree -->
-                <TreeView Grid.Column="0"
-                          ItemsSource="{Binding RootNodes}"
-                          SelectedItem="{Binding SelectedNode}"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                    <TreeView.Styles>
-                        <Style Selector="TreeViewItem">
-                            <Setter Property="ItemsPanel">
-                                <Setter.Value>
-                                    <ItemsPanelTemplate>
-                                        <VirtualizingStackPanel/>
-                                    </ItemsPanelTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </TreeView.Styles>
-                    <TreeView.ItemTemplate>
-                        <TreeDataTemplate x:DataType="vm:ChunkNodeViewModel"
-                                          ItemsSource="{Binding Children}">
-                            <TextBlock Text="{Binding Label}" Padding="2"/>
-                        </TreeDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
+                <!-- Left: Search box + chunk tree -->
+                <DockPanel Grid.Column="0">
+                    <TextBox DockPanel.Dock="Top"
+                             Text="{Binding SearchText}"
+                             Watermark="Search..."
+                             Margin="4"/>
+
+                    <TreeView ItemsSource="{Binding RootNodes}"
+                              SelectedItem="{Binding SelectedNode}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem" x:DataType="vm:ChunkNodeViewModel">
+                                <Setter Property="IsVisible" Value="{Binding IsVisible}"/>
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                <Setter Property="ItemsPanel">
+                                    <Setter.Value>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate x:DataType="vm:ChunkNodeViewModel"
+                                              ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Label}" Padding="2"/>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </DockPanel>
 
                 <!-- Splitter -->
                 <GridSplitter Grid.Column="1" ResizeDirection="Columns"/>

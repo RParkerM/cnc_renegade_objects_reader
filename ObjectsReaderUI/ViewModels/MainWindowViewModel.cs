@@ -15,6 +15,39 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private ChunkNodeViewModel? _selectedNode;
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string _windowTitle = "Objects.ddb Viewer";
+    [ObservableProperty] private string _searchText = "";
+
+    partial void OnSearchTextChanged(string value)
+    {
+        var filter = value.Trim();
+        foreach (var node in RootNodes)
+            ApplyFilter(node, filter);
+    }
+
+    // Returns true if the node or any descendant matches the filter. Matching
+    // nodes stay visible along with their ancestors; ancestors of a match are
+    // expanded so the match is revealed.
+    private static bool ApplyFilter(ChunkNodeViewModel node, string filter)
+    {
+        if (filter.Length == 0)
+        {
+            node.IsVisible = true;
+            node.IsExpanded = false;
+            foreach (var child in node.Children)
+                ApplyFilter(child, filter);
+            return true;
+        }
+
+        bool selfMatch = node.Label.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+        bool childMatch = false;
+        foreach (var child in node.Children)
+            childMatch |= ApplyFilter(child, filter);
+
+        node.IsVisible = selfMatch || childMatch;
+        node.IsExpanded = childMatch;
+        return node.IsVisible;
+    }
 
     partial void OnSelectedNodeChanged(ChunkNodeViewModel? value)
     {

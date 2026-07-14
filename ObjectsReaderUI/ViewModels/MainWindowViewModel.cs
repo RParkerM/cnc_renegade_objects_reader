@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using RenData.Definitions;
 using RenData.SaveLoad;
@@ -10,23 +11,40 @@ namespace ObjectsReaderUI.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     public ObservableCollection<ChunkNodeViewModel> RootNodes { get; } = [];
-    public ObservableCollection<PropertyRow> Properties { get; } = [];
+    public RangeObservableCollection<PropertyRow> Properties { get; } = [];
 
     [ObservableProperty] private ChunkNodeViewModel? _selectedNode;
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string _windowTitle = "Objects.ddb Viewer";
     [ObservableProperty] private string _searchText = "";
 
-    partial void OnSearchTextChanged(string value)
+    // Coalesce rapid keystrokes so the tree is filtered once the user pauses,
+    // rather than re-walking the whole tree on every character.
+    private readonly DispatcherTimer _searchDebounce;
+
+    public MainWindowViewModel()
     {
-        var filter = value.Trim();
-        foreach (var node in RootNodes)
-            ApplyFilter(node, filter);
+        _searchDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _searchDebounce.Tick += (_, _) =>
+        {
+            _searchDebounce.Stop();
+            var filter = SearchText.Trim();
+            foreach (var node in RootNodes)
+                ApplyFilter(node, filter);
+        };
     }
 
-    // Returns true if the node or any descendant matches the filter. Matching
-    // nodes stay visible along with their ancestors; ancestors of a match are
-    // expanded so the match is revealed.
+    partial void OnSearchTextChanged(string value)
+    {
+        // Restart the countdown; the filter runs when typing settles.
+        _searchDebounce.Stop();
+        _searchDebounce.Start();
+    }
+
+    // Returns true if the node or any descendant matches the filter. Rather than
+    // toggling per-node visibility (which forces the virtualizing panel to walk
+    // every hidden node), we rebuild each node's VisibleChildren to hold only the
+    // matching subtree, so the tree materializes work proportional to matches.
     private static bool ApplyFilter(ChunkNodeViewModel node, string filter)
     {
         if (filter.Length == 0)
@@ -35,29 +53,34 @@ public partial class MainWindowViewModel : ViewModelBase
             node.IsExpanded = false;
             foreach (var child in node.Children)
                 ApplyFilter(child, filter);
+            node.VisibleChildren.ReplaceAll(node.Children);
             return true;
         }
 
         bool selfMatch = node.Label.Contains(filter, StringComparison.OrdinalIgnoreCase);
 
-        bool childMatch = false;
+        var visible = new List<ChunkNodeViewModel>();
         foreach (var child in node.Children)
-            childMatch |= ApplyFilter(child, filter);
+            if (ApplyFilter(child, filter))
+                visible.Add(child);
 
-        node.IsVisible = selfMatch || childMatch;
-        node.IsExpanded = childMatch;
+        node.VisibleChildren.ReplaceAll(visible);
+        node.IsVisible = selfMatch || visible.Count > 0;
+        node.IsExpanded = visible.Count > 0;
         return node.IsVisible;
     }
 
     partial void OnSelectedNodeChanged(ChunkNodeViewModel? value)
     {
-        Properties.Clear();
-        if (value?.Data is null) return;
+        if (value?.Data is null)
+        {
+            Properties.ReplaceAll([]);
+            return;
+        }
 
         var rows = new List<PropertyRow>();
         BuildProperties(value.Data, rows);
-        foreach (var row in rows)
-            Properties.Add(row);
+        Properties.ReplaceAll(rows);
     }
 
     public async Task LoadFileAsync(string path)

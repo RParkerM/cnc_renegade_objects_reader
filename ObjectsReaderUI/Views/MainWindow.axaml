@@ -49,7 +49,7 @@
                         </TreeView.Styles>
                         <TreeView.ItemTemplate>
                             <TreeDataTemplate x:DataType="vm:ChunkNodeViewModel"
-                                              ItemsSource="{Binding Children}">
+                                              ItemsSource="{Binding VisibleChildren}">
                                 <TextBlock Text="{Binding Label}" Padding="2"/>
                             </TreeDataTemplate>
                         </TreeView.ItemTemplate>
@@ -67,24 +67,31 @@
                         <TextBlock Grid.Column="1" Text="Value"    FontWeight="Bold" Padding="6,4"/>
                     </Grid>
 
-                    <!-- Property rows -->
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding Properties}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:PropertyRow">
-                                    <Grid ColumnDefinitions="250,*">
-                                        <Border Grid.Column="0" BorderBrush="#22000000" BorderThickness="0,0,1,1">
-                                            <TextBlock Text="{Binding Name}" Padding="6,2"
-                                                       FontFamily="Consolas,Courier New,monospace"/>
-                                        </Border>
-                                        <Border Grid.Column="1" BorderBrush="#22000000" BorderThickness="0,0,0,1">
-                                            <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"/>
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <!-- Property rows (virtualized: ListBox realizes only visible rows) -->
+                    <ListBox ItemsSource="{Binding Properties}"
+                             SelectionMode="Single"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="MinHeight" Value="0"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PropertyRow">
+                                <Grid ColumnDefinitions="250,*">
+                                    <Border Grid.Column="0" BorderBrush="#22000000" BorderThickness="0,0,1,1">
+                                        <TextBlock Text="{Binding Name}" Padding="6,2"
+                                                   FontFamily="Consolas,Courier New,monospace"/>
+                                    </Border>
+                                    <Border Grid.Column="1" BorderBrush="#22000000" BorderThickness="0,0,0,1">
+                                        <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </DockPanel>
             </Grid>
 

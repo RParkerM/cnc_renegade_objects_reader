@@ -8,6 +8,8 @@ public partial class ChunkNodeViewModel : ObservableObject
     public object? Data { get; }
     public List<ChunkNodeViewModel> Children { get; }
 
+    public RangeObservableCollection<ChunkNodeViewModel> VisibleChildren { get; }
+
     [ObservableProperty] private bool _isVisible = true;
     [ObservableProperty] private bool _isExpanded;
 
@@ -16,5 +18,7 @@ public partial class ChunkNodeViewModel : ObservableObject
         Label = label;
         Data = data;
         Children = children ?? [];
+        VisibleChildren = [];
+        VisibleChildren.ReplaceAll(Children);
     }
 }

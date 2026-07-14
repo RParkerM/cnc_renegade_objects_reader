@@ -15,6 +15,11 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open..." Click="OnOpenClicked" InputGesture="Ctrl+O"/>
+                <Separator/>
+                <MenuItem Header="_Save" Click="OnSaveClicked" InputGesture="Ctrl+S"
+                          IsEnabled="{Binding HasFile}"/>
+                <MenuItem Header="Save _As..." Click="OnSaveAsClicked"
+                          IsEnabled="{Binding HasFile}"/>
             </MenuItem>
         </Menu>
 
@@ -86,7 +91,17 @@
                                                    FontFamily="Consolas,Courier New,monospace"/>
                                     </Border>
                                     <Border Grid.Column="1" BorderBrush="#22000000" BorderThickness="0,0,0,1">
-                                        <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"/>
+                                        <Panel>
+                                            <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"
+                                                       IsVisible="{Binding IsReadOnly}"/>
+                                            <TextBox Text="{Binding Value, Mode=TwoWay}" Padding="6,2"
+                                                     BorderThickness="0" Background="Transparent"
+                                                     IsVisible="{Binding IsText}"/>
+                                            <ComboBox ItemsSource="{Binding Options}"
+                                                      SelectedItem="{Binding Value, Mode=TwoWay}"
+                                                      HorizontalAlignment="Stretch" Padding="6,2"
+                                                      IsVisible="{Binding IsChoice}"/>
+                                        </Panel>
                                     </Border>
                                 </Grid>
                             </DataTemplate>

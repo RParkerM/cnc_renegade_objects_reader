@@ -32,4 +32,40 @@ public partial class MainWindow : Window
                 await vm.LoadFileAsync(path);
         }
     }
+
+    private async void OnSaveClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel { HasFile: true } vm)
+            return;
+
+        // Save straight to the loaded file if we know where it is, otherwise prompt.
+        if (vm.CurrentPath is { } path)
+            vm.Save(path);
+        else
+            await SaveAs(vm);
+    }
+
+    private async void OnSaveAsClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { HasFile: true } vm)
+            await SaveAs(vm);
+    }
+
+    private async Task SaveAs(MainWindowViewModel vm)
+    {
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save objects.ddb",
+            DefaultExtension = "ddb",
+            SuggestedFileName = vm.CurrentPath is { } p ? System.IO.Path.GetFileName(p) : "objects.ddb",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("Database files") { Patterns = ["*.ddb"] },
+            ]
+        });
+
+        var path = file?.TryGetLocalPath();
+        if (path is not null)
+            vm.Save(path);
+    }
 }

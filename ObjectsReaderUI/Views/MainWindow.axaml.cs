@@ -16,12 +16,14 @@ public partial class MainWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open objects.ddb",
+            Title = "Open file",
             AllowMultiple = false,
             FileTypeFilter =
             [
-                new FilePickerFileType("Database files") { Patterns = ["*.ddb"] },
-                new FilePickerFileType("All files")      { Patterns = ["*.*"] },
+                new FilePickerFileType("Supported files") { Patterns = ["*.ddb", "*.dat", "*.tpi"] },
+                new FilePickerFileType("Database files")  { Patterns = ["*.ddb"] },
+                new FilePickerFileType("Package files")   { Patterns = ["*.dat", "*.tpi"] },
+                new FilePickerFileType("All files")       { Patterns = ["*.*"] },
             ]
         });
 
@@ -29,7 +31,7 @@ public partial class MainWindow : Window
         {
             var path = file.TryGetLocalPath();
             if (path is not null)
-                await vm.LoadFileAsync(path);
+                await vm.OpenAsync(path);
         }
     }
 
@@ -82,14 +84,21 @@ public partial class MainWindow : Window
 
     private async Task SaveAs(MainWindowViewModel vm)
     {
+        // Keep the same extension/format as what was loaded.
+        var ext = vm.CurrentPath is { } cp
+            ? System.IO.Path.GetExtension(cp).TrimStart('.').ToLowerInvariant()
+            : "ddb";
+        if (ext.Length == 0) ext = "ddb";
+
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Save objects.ddb",
-            DefaultExtension = "ddb",
-            SuggestedFileName = vm.CurrentPath is { } p ? System.IO.Path.GetFileName(p) : "objects.ddb",
+            Title = "Save As",
+            DefaultExtension = ext,
+            SuggestedFileName = vm.CurrentPath is { } p ? System.IO.Path.GetFileName(p) : $"objects.{ext}",
             FileTypeChoices =
             [
-                new FilePickerFileType("Database files") { Patterns = ["*.ddb"] },
+                new FilePickerFileType($"{ext} files") { Patterns = [$"*.{ext}"] },
+                new FilePickerFileType("All files")    { Patterns = ["*.*"] },
             ]
         });
 

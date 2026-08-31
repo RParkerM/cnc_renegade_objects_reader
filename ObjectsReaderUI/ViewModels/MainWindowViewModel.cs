@@ -5,9 +5,13 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ObjectsReaderUI.Editing;
 using RenData.Definitions;
+using RenData.Packages;
 using RenData.SaveLoad;
 
 namespace ObjectsReaderUI.ViewModels;
+
+/// <summary>Which kind of file is currently loaded, so Save routes to the matching serializer.</summary>
+public enum LoadedFileKind { Ddb, PackagesDat, Tpi }
 
 public partial class MainWindowViewModel : ViewModelBase
 {
@@ -25,9 +29,28 @@ public partial class MainWindowViewModel : ViewModelBase
     // The top-level chunks in original file order, kept so Save can round-trip them.
     private List<TopLevelChunk> _loadedChunks = [];
 
+    // Packages loaded from a packages.dat / .tpi file (null when a .ddb is loaded).
+    private List<PackageClass> _loadedPackages = [];
+
+    private LoadedFileKind _loadedKind = LoadedFileKind.Ddb;
+
     public string? CurrentPath { get; private set; }
 
-    public void Save(string path) => FileLoader.Save(path, _loadedChunks);
+    public void Save(string path)
+    {
+        switch (_loadedKind)
+        {
+            case LoadedFileKind.PackagesDat:
+                PackagesDatFile.Save(path, _loadedPackages);
+                break;
+            case LoadedFileKind.Tpi:
+                PackagesDatFile.SaveTpi(path, _loadedPackages[0]);
+                break;
+            default:
+                FileLoader.Save(path, _loadedChunks);
+                break;
+        }
+    }
 
     // The definition backing the current selection, if any — the target for JSON export.
     public DefinitionClass? SelectedDefinition => SelectedNode?.Data as DefinitionClass;
@@ -109,6 +132,54 @@ public partial class MainWindowViewModel : ViewModelBase
         Properties.ReplaceAll(rows);
     }
 
+    /// <summary>Opens a file, dispatching to the right loader based on its extension.</summary>
+    public Task OpenAsync(string path)
+    {
+        var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext switch
+        {
+            ".tpi" => LoadPackagesAsync(path, isTpi: true),
+            ".dat" => LoadPackagesAsync(path, isTpi: false),
+            _ => LoadFileAsync(path),
+        };
+    }
+
+    /// <summary>Loads a packages.dat (or single .tpi) and builds a package → files tree.</summary>
+    public async Task LoadPackagesAsync(string path, bool isTpi)
+    {
+        IsLoading = true;
+        RootNodes.Clear();
+        Properties.Clear();
+        SelectedNode = null;
+
+        List<PackageClass> packages;
+        try
+        {
+            packages = await Task.Run(() => isTpi
+                ? [PackagesDatFile.LoadTpi(path)]
+                : PackagesDatFile.Load(path));
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+
+        foreach (var pkg in packages)
+        {
+            var fileNodes = pkg.Files
+                .Select(f => new ChunkNodeViewModel(f.FileName, f))
+                .ToList();
+            RootNodes.Add(new ChunkNodeViewModel($"{pkg.Name} [{pkg.Files.Count} files]", pkg, fileNodes));
+        }
+
+        _loadedPackages = packages;
+        _loadedChunks = [];
+        _loadedKind = isTpi ? LoadedFileKind.Tpi : LoadedFileKind.PackagesDat;
+        CurrentPath = path;
+        HasFile = true;
+        WindowTitle = $"Package Viewer — {System.IO.Path.GetFileName(path)}";
+    }
+
     public async Task LoadFileAsync(string path)
     {
         IsLoading = true;
@@ -143,6 +214,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         _loadedChunks = chunks;
+        _loadedPackages = [];
+        _loadedKind = LoadedFileKind.Ddb;
         CurrentPath = path;
         HasFile = true;
         WindowTitle = $"Objects.ddb Viewer — {System.IO.Path.GetFileName(path)}";
@@ -153,6 +226,18 @@ public partial class MainWindowViewModel : ViewModelBase
         if (depth > 4) return;
         visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
         if (!visited.Add(obj)) return;
+
+        if (obj is PackageClass pkg && depth == 0)
+        {
+            BuildPackageRows(rows, pkg);
+            return;
+        }
+
+        if (obj is PackageFileEntry entry && depth == 0)
+        {
+            BuildFileEntryRows(rows, entry);
+            return;
+        }
 
         if (obj is DefinitionClass def && depth == 0)
         {
@@ -237,4 +322,46 @@ public partial class MainWindowViewModel : ViewModelBase
 
         BuildProperties(value, rows, name, visited, depth + 1);
     }
+
+    // ── Package editing rows ────────────────────────────────────────────────────
+    // Packages aren't schema-driven definitions, so we emit editable rows directly.
+    // Edits mutate the live PackageClass/PackageFileEntry, which Save then serializes.
+
+    private static void BuildPackageRows(List<PropertyRow> rows, PackageClass pkg)
+    {
+        rows.Add(HexRow("PackageCRC", () => pkg.PackageCRC, v => pkg.PackageCRC = v));
+        rows.Add(TextRow("Name", () => pkg.Name, v => pkg.Name = v));
+        rows.Add(TextRow("Version", () => pkg.Version, v => pkg.Version = v));
+        rows.Add(TextRow("Owner", () => pkg.Owner, v => pkg.Owner = v));
+        rows.Add(UIntRow("Type", () => pkg.Type, v => pkg.Type = v));
+        rows.Add(new PropertyRow("Files", $"{pkg.Files.Count} files"));
+    }
+
+    private static void BuildFileEntryRows(List<PropertyRow> rows, PackageFileEntry entry)
+    {
+        rows.Add(HexRow("FileCRC", () => entry.FileCRC, v => entry.FileCRC = v));
+        rows.Add(UIntRow("FileSize", () => entry.FileSize, v => entry.FileSize = v));
+        rows.Add(TextRow("FileName", () => entry.FileName, v => entry.FileName = v));
+        // The name this entry has as a flat blob in the sibling files/ directory.
+        rows.Add(new PropertyRow("Blob file (files/)", entry.BlobFileName));
+    }
+
+    private static PropertyRow TextRow(string name, Func<string> get, Action<string> set) =>
+        new(name, get(), PropertyEditorKind.Text, v => { set(v); return get(); });
+
+    private static PropertyRow UIntRow(string name, Func<uint> get, Action<uint> set) =>
+        new(name, get().ToString(), PropertyEditorKind.Text, v =>
+        {
+            set(uint.Parse(v.Trim()));   // invalid input throws → PropertyRow keeps the typed text
+            return get().ToString();
+        });
+
+    private static PropertyRow HexRow(string name, Func<uint> get, Action<uint> set) =>
+        new(name, $"0x{get():X8}", PropertyEditorKind.Text, v =>
+        {
+            var t = v.Trim();
+            if (t.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) t = t[2..];
+            set(Convert.ToUInt32(t, 16));
+            return $"0x{get():X8}";
+        });
 }

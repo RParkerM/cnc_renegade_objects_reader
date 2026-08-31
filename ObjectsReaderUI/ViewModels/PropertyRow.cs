@@ -11,8 +11,9 @@ public enum PropertyEditorKind
 
 /// <summary>
 /// A single row in the properties panel. Read-only rows just carry a label and a
-/// value string. Editable rows also carry a setter that writes the edited value
-/// straight back onto the live definition object, so changes are picked up by Save.
+/// value string. Editable rows also carry an "apply" callback that writes the edited
+/// value onto the live definition object and returns the canonical stored value, so
+/// normalization (e.g. clamping a color channel to 0–1) is reflected back to the user.
 /// </summary>
 public partial class PropertyRow : ObservableObject
 {
@@ -20,7 +21,8 @@ public partial class PropertyRow : ObservableObject
     public PropertyEditorKind Kind { get; }
     public IReadOnlyList<string>? Options { get; }
 
-    private readonly Action<string>? _set;
+    private readonly Func<string, string?>? _apply;
+    private bool _syncing;
 
     [ObservableProperty] private string _value;
 
@@ -36,23 +38,36 @@ public partial class PropertyRow : ObservableObject
         Kind = PropertyEditorKind.ReadOnly;
     }
 
-    /// <summary>Editable row. <paramref name="set"/> applies the new value to the target object.</summary>
+    /// <summary>
+    /// Editable row. <paramref name="apply"/> stores the new value on the target object and
+    /// returns the canonical value to display (or null to leave the entered text as-is).
+    /// </summary>
     public PropertyRow(string name, string value, PropertyEditorKind kind,
-                       Action<string> set, IReadOnlyList<string>? options = null)
+                       Func<string, string?> apply, IReadOnlyList<string>? options = null)
     {
         Name = name;
         _value = value ?? "";
         Kind = kind;
-        _set = set;
+        _apply = apply;
         Options = options;
     }
 
     partial void OnValueChanged(string value)
     {
-        // Only user edits reach here — the initial value is assigned to the backing
-        // field in the constructor, bypassing this callback. A parse failure leaves
-        // the live object untouched rather than crashing the edit.
-        try { _set?.Invoke(value); }
-        catch { /* invalid input: keep the previous stored value */ }
+        // Only user edits reach here — the initial value is assigned to the backing field in
+        // the constructor, bypassing this callback. _syncing guards the re-entrant write below.
+        if (_apply is null || _syncing)
+            return;
+
+        string? canonical;
+        try { canonical = _apply(value); }
+        catch { return; }   // invalid input: leave the typed text, live object untouched
+
+        if (canonical is not null && canonical != value)
+        {
+            _syncing = true;
+            Value = canonical;
+            _syncing = false;
+        }
     }
 }

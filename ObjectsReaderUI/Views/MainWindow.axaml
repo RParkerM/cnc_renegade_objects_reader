@@ -94,7 +94,8 @@
                                         <Panel>
                                             <TextBlock Text="{Binding Value}" Padding="6,2" TextWrapping="Wrap"
                                                        IsVisible="{Binding IsReadOnly}"/>
-                                            <TextBox Text="{Binding Value, Mode=TwoWay}" Padding="6,2"
+                                            <TextBox Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     Padding="6,2"
                                                      BorderThickness="0" Background="Transparent"
                                                      IsVisible="{Binding IsText}"/>
                                             <ComboBox ItemsSource="{Binding Options}"

@@ -648,7 +648,7 @@ public class DefinitionMgrClass : SaveLoadSubSystemClass
 
         while (cload.Open_Chunk())
         {
-            Console.WriteLine($"Loading definition chunk ID: {cload.Cur_Chunk_ID}");
+            //Console.WriteLine($"Loading definition chunk ID: {cload.Cur_Chunk_ID}");
             definitionCounts.TryGetValue(cload.Cur_Chunk_ID, out int count);
             definitionCounts[cload.Cur_Chunk_ID] = count + 1;
             //

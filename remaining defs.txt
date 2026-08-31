@@ -30,35 +30,38 @@ Loaded 140 definitions of Chunk ID: AmmoDefinitionClass 262440
 Loaded 159 definitions of Chunk ID: VehicleGameObjDef 262441
 Loaded 96 definitions of Chunk ID: ExplosionDefinitionClass 262442
 Loaded 110 definitions of Chunk ID: CinematicGameObjDef 262444
-Loaded 3 definitions of Chunk ID: 262446
-Loaded 1 definitions of Chunk ID: 262448
-Loaded 2 definitions of Chunk ID: 262450
+Loaded 3 definitions of Chunk ID: DamageZoneGameObjDef 262446
+Loaded 1 definitions of Chunk ID: SpecialEffectsGameObjDef 262448
+Loaded 2 definitions of Chunk ID: SakuraBossGameObjDef 262450
 Loaded 28 definitions of Chunk ID: BuildingGameObjDef 262452
 Loaded 4 definitions of Chunk ID: BeaconGameObjDef 262454
-Loaded 2 definitions of Chunk ID: 262456
-Loaded 2 definitions of Chunk ID: 262458
-Loaded 2 definitions of Chunk ID: 262460
+Loaded 2 definitions of Chunk ID: RefineryGameObjDef 262456
+Loaded 2 definitions of Chunk ID: PowerPlantGameObjDef 262458
+Loaded 2 definitions of Chunk ID: SoldierFactoryGameObjDef 262460
 Loaded 1 definitions of Chunk ID: AirStripGameObjDef 262464
-Loaded 1 definitions of Chunk ID: 262466
-Loaded 2 definitions of Chunk ID: 262468
-Loaded 2 definitions of Chunk ID: 262470
-Loaded 1 definitions of Chunk ID: 262474
-Loaded 1 definitions of Chunk ID: 262476
-Loaded 3 definitions of Chunk ID: 263681
-Loaded 1 definitions of Chunk ID: 263682
-Loaded 1 definitions of Chunk ID: 263683
-Loaded 1 definitions of Chunk ID: 263684
-Loaded 1 definitions of Chunk ID: 263685
-Loaded 10 definitions of Chunk ID: 263686
-Loaded 13 definitions of Chunk ID: 263687
-Loaded 2 definitions of Chunk ID: 263688
-Loaded 1 definitions of Chunk ID: 263689
-Loaded 400 definitions of Chunk ID: 327680
-Loaded 904 definitions of Chunk ID: 327681
-Loaded 1 definitions of Chunk ID: 327682
-Loaded 4 definitions of Chunk ID: 327683
-Loaded 1 definitions of Chunk ID: 327702
-Loaded 1 definitions of Chunk ID: 327704
-Loaded 24 definitions of Chunk ID: 327705
-Loaded 1 definitions of Chunk ID: 327708
-Loaded 11 definitions of Chunk ID: 327718
+Loaded 1 definitions of Chunk ID: WarFactoryGameObjDef 262466
+Loaded 2 definitions of Chunk ID: ComCenterGameObjDef 262468
+Loaded 2 definitions of Chunk ID: RepairBayGameObjDef 262470
+Loaded 1 definitions of Chunk ID: MendozaBossGameObjDefClass 262474
+Loaded 1 definitions of Chunk ID: RaveshawBossGameObjDefClass 262476
+Loaded 3 definitions of Chunk ID: HumanLoiterGlobalSettingsDef 263681
+Loaded 1 definitions of Chunk ID: GlobalSettingsDef 263682
+Loaded 1 definitions of Chunk ID: HUDGlobalSettingsDef 263683
+Loaded 1 definitions of Chunk ID: EvaSettingsDefClass 263684
+Loaded 1 definitions of Chunk ID: CharacterClassSettingsDefClass 263685
+Loaded 10 definitions of Chunk ID: HumanAnimOverrideDef 263686
+Loaded 13 definitions of Chunk ID: PurchaseSettingsDefClass 263687
+Loaded 2 definitions of Chunk ID: TeamPurchaseSettingsDefClass 263688
+Loaded 1 definitions of Chunk ID: CNCModeSettingsDef 263689
+
+==== Still needs implementing (editor chunk range, CHUNKID_COMMANDO_EDITOR_BEGIN = 0x00050000 = 327680) ====
+
+Loaded 400 definitions of Chunk ID: 327680   [CHUNKID_TERRAIN_DEF]
+Loaded 904 definitions of Chunk ID: 327681   [CHUNKID_TILE_DEF]
+Loaded 1 definitions of Chunk ID: 327682     [CHUNKID_LIGHT_DEF]
+Loaded 4 definitions of Chunk ID: 327683     [CHUNKID_WAYPATH_DEF]
+Loaded 1 definitions of Chunk ID: 327702     [CHUNKID_VIS_POINT_DEF]
+Loaded 1 definitions of Chunk ID: 327704     [CHUNKID_PATHFIND_START_DEF]
+Loaded 24 definitions of Chunk ID: 327705    [CHUNKID_DUMMY_OBJECT_DEF]
+Loaded 1 definitions of Chunk ID: 327708     [CHUNKID_COVERSPOT_DEF]
+Loaded 11 definitions of Chunk ID: 327718    [CHUNKID_EDITOR_ONLY_OBJECTS_DEF]

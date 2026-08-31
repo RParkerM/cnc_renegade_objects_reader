@@ -20,6 +20,9 @@
                           IsEnabled="{Binding HasFile}"/>
                 <MenuItem Header="Save _As..." Click="OnSaveAsClicked"
                           IsEnabled="{Binding HasFile}"/>
+                <Separator/>
+                <MenuItem Header="_Export Def to JSON..." Click="OnExportJsonClicked"
+                          IsEnabled="{Binding CanExportJson}"/>
             </MenuItem>
         </Menu>
 

@@ -29,6 +29,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void Save(string path) => FileLoader.Save(path, _loadedChunks);
 
+    // The definition backing the current selection, if any — the target for JSON export.
+    public DefinitionClass? SelectedDefinition => SelectedNode?.Data as DefinitionClass;
+
+    // Drives the enabled state of the "Export Def to JSON" menu item.
+    public bool CanExportJson => SelectedDefinition is not null;
+
+    public void ExportDefinitionJson(string path)
+    {
+        if (SelectedDefinition is { } def)
+            System.IO.File.WriteAllText(path, DefinitionJsonExporter.ToJson(def));
+    }
+
     // Coalesce rapid keystrokes so the tree is filtered once the user pauses,
     // rather than re-walking the whole tree on every character.
     private readonly DispatcherTimer _searchDebounce;
@@ -83,6 +95,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     partial void OnSelectedNodeChanged(ChunkNodeViewModel? value)
     {
+        OnPropertyChanged(nameof(SelectedDefinition));
+        OnPropertyChanged(nameof(CanExportJson));
+
         if (value?.Data is null)
         {
             Properties.ReplaceAll([]);
@@ -158,7 +173,7 @@ public partial class MainWindowViewModel : ViewModelBase
         // the definition's schema); everything else stays read-only as before.
         var schema = depth == 0 ? DefinitionEditor.GetSchema(obj) : null;
 
-        foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance).OrderBy(f => f.Name))
+        foreach (var field in DefinitionReflection.GetAllInstanceFields(type))
         {
             string name = prefix == "" ? field.Name : $"{prefix}.{field.Name}";
             if (schema is not null &&

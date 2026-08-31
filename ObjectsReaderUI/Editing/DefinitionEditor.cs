@@ -17,7 +17,10 @@ public static class DefinitionEditor
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
     // Identity/plumbing shared by all definitions — never editable, regardless of schema.
-    private static readonly HashSet<string> AlwaysReadOnly = ["m_DefinitionMgrLink", "Old_Object_Pointer"];
+    // (m_Name/m_ID are the definition's identity and dictionary key; the rest is internal
+    // save-state. They surface as read-only rows but must not be hand-edited.)
+    private static readonly HashSet<string> AlwaysReadOnly =
+        ["m_DefinitionMgrLink", "Old_Object_Pointer", "m_Name", "m_ID", "m_GenericUserData", "m_SaveEnabled"];
 
     /// <summary>Returns the edit schema for a definition, or null if it isn't editable.</summary>
     public static IDefinitionSchema? GetSchema(object definition) => DefinitionSchemaRegistry.For(definition);

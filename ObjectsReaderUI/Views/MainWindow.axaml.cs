@@ -51,6 +51,35 @@ public partial class MainWindow : Window
             await SaveAs(vm);
     }
 
+    private async void OnExportJsonClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel { SelectedDefinition: { } def } vm)
+            return;
+
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export definition to JSON",
+            DefaultExtension = "json",
+            SuggestedFileName = $"{Sanitize(def.Get_Name())}.json",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("JSON files") { Patterns = ["*.json"] },
+            ]
+        });
+
+        var path = file?.TryGetLocalPath();
+        if (path is not null)
+            vm.ExportDefinitionJson(path);
+    }
+
+    // Strips characters that aren't legal in a filename so the definition name can seed one.
+    private static string Sanitize(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "definition";
+        var chars = name.Select(c => System.IO.Path.GetInvalidFileNameChars().Contains(c) ? '_' : c);
+        return new string(chars.ToArray());
+    }
+
     private async Task SaveAs(MainWindowViewModel vm)
     {
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions

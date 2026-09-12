@@ -5,7 +5,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ObjectsReaderUI.Editing;
 using RenData.Definitions;
-using RenData.Packages;
+using RenData.Packaging;
 using RenData.SaveLoad;
 
 namespace ObjectsReaderUI.ViewModels;

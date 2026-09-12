@@ -100,6 +100,14 @@ public class ClassId
     public const uint CLASSID_DAMAGEABLESTATICPHYSDEF = 0x00009082;
     public const uint CLASSID_BUILDINGAGGREGATEDEF = 0x00009083;
 
+    // Editor-only class IDs (Tools/LevelEdit/EditorChunkIDs.h, start at CLASSID_EDITOR_OBJECTS + 1)
+    public const uint CLASSID_EDITOR_START = (uint)CLASSID_EDITOR_OBJECTS + 1;
+    public const uint CLASSID_VIS_POINT_DEF = CLASSID_EDITOR_START + 1;
+    public const uint CLASSID_PATHFIND_START_DEF = CLASSID_VIS_POINT_DEF + 1;
+    public const uint CLASSID_LIGHT_DEF = CLASSID_PATHFIND_START_DEF + 1;
+    public const uint CLASSID_COVERSPOT = CLASSID_LIGHT_DEF + 1;
+    public const uint CLASSID_EDITOR_ONLY_OBJECTS = CLASSID_COVERSPOT + 1;
+
     public static uint SuperClassID_From_ClassID(uint class_id)
     {
         //

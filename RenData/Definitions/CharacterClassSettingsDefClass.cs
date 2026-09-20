@@ -47,7 +47,6 @@ public partial class CharacterClassSettingsDefClass : DefinitionClass
 
         csave.Begin_Chunk(CHUNKID_VARIABLES);
 
-        // GDI Cost (24 entries, IDs 1-24)
         WriteCost(csave, 1, CLASS_MINIGUNNER, TEAM_GDI);
         WriteCost(csave, 5, CLASS_ROCKET_SOLDIER, TEAM_GDI);
         WriteCost(csave, 9, CLASS_GRENADIER, TEAM_GDI);
@@ -55,15 +54,6 @@ public partial class CharacterClassSettingsDefClass : DefinitionClass
         WriteCost(csave, 17, CLASS_FLAME_THROWER, TEAM_GDI);
         WriteCost(csave, 21, CLASS_MUTANT, TEAM_GDI);
 
-        // NOD Cost (24 entries, IDs 25-48)
-        WriteCost(csave, 25, CLASS_MINIGUNNER, TEAM_NOD);
-        WriteCost(csave, 29, CLASS_ROCKET_SOLDIER, TEAM_NOD);
-        WriteCost(csave, 33, CLASS_GRENADIER, TEAM_NOD);
-        WriteCost(csave, 37, CLASS_ENGINEER, TEAM_NOD);
-        WriteCost(csave, 41, CLASS_FLAME_THROWER, TEAM_NOD);
-        WriteCost(csave, 45, CLASS_MUTANT, TEAM_NOD);
-
-        // GDI DefID (24 entries, IDs 49-72)
         WriteDef(csave, 49, CLASS_MINIGUNNER, TEAM_GDI);
         WriteDef(csave, 53, CLASS_ROCKET_SOLDIER, TEAM_GDI);
         WriteDef(csave, 57, CLASS_GRENADIER, TEAM_GDI);
@@ -71,7 +61,13 @@ public partial class CharacterClassSettingsDefClass : DefinitionClass
         WriteDef(csave, 65, CLASS_FLAME_THROWER, TEAM_GDI);
         WriteDef(csave, 69, CLASS_MUTANT, TEAM_GDI);
 
-        // NOD DefID (24 entries, IDs 73-96)
+        WriteCost(csave, 25, CLASS_MINIGUNNER, TEAM_NOD);
+        WriteCost(csave, 29, CLASS_ROCKET_SOLDIER, TEAM_NOD);
+        WriteCost(csave, 33, CLASS_GRENADIER, TEAM_NOD);
+        WriteCost(csave, 37, CLASS_ENGINEER, TEAM_NOD);
+        WriteCost(csave, 41, CLASS_FLAME_THROWER, TEAM_NOD);
+        WriteCost(csave, 45, CLASS_MUTANT, TEAM_NOD);
+
         WriteDef(csave, 73, CLASS_MINIGUNNER, TEAM_NOD);
         WriteDef(csave, 77, CLASS_ROCKET_SOLDIER, TEAM_NOD);
         WriteDef(csave, 81, CLASS_GRENADIER, TEAM_NOD);

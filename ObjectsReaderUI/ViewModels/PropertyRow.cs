@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ObjectsReaderUI.ViewModels;
 
@@ -7,6 +8,7 @@ public enum PropertyEditorKind
     ReadOnly,   // display only — shown as a plain text block
     Text,       // free-form entry — numbers and strings
     Choice,     // constrained set of values — shown as a dropdown
+    Link,       // click-through reference — shown as a hyperlink-style button
 }
 
 /// <summary>
@@ -22,6 +24,7 @@ public partial class PropertyRow : ObservableObject
     public IReadOnlyList<string>? Options { get; }
 
     private readonly Func<string, string?>? _apply;
+    private readonly Action? _navigate;
     private bool _syncing;
 
     [ObservableProperty] private string _value;
@@ -29,6 +32,7 @@ public partial class PropertyRow : ObservableObject
     public bool IsReadOnly => Kind == PropertyEditorKind.ReadOnly;
     public bool IsText => Kind == PropertyEditorKind.Text;
     public bool IsChoice => Kind == PropertyEditorKind.Choice;
+    public bool IsLink => Kind == PropertyEditorKind.Link;
 
     /// <summary>Read-only row (unchanged behavior for non-editable data).</summary>
     public PropertyRow(string name, string value)
@@ -37,6 +41,21 @@ public partial class PropertyRow : ObservableObject
         _value = value ?? "";
         Kind = PropertyEditorKind.ReadOnly;
     }
+
+    /// <summary>
+    /// Link row. Displays <paramref name="value"/> as a hyperlink-style button that
+    /// runs <paramref name="navigate"/> when clicked (e.g. jump to a referenced definition).
+    /// </summary>
+    public PropertyRow(string name, string value, Action navigate)
+    {
+        Name = name;
+        _value = value ?? "";
+        Kind = PropertyEditorKind.Link;
+        _navigate = navigate;
+    }
+
+    [RelayCommand]
+    private void Navigate() => _navigate?.Invoke();
 
     /// <summary>
     /// Editable row. <paramref name="apply"/> stores the new value on the target object and

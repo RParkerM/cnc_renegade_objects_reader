@@ -32,6 +32,11 @@ public partial class MainWindowViewModel : ViewModelBase
     // Packages loaded from a packages.dat / .tpi file (null when a .ddb is loaded).
     private List<PackageClass> _loadedPackages = [];
 
+    // Maps each loaded definition to its tree node, so a click-through reference can
+    // select the target definition. Keyed by reference identity (DefinitionClass doesn't
+    // override Equals, so the default comparer already compares by reference).
+    private Dictionary<DefinitionClass, ChunkNodeViewModel> _definitionNodes = [];
+
     private LoadedFileKind _loadedKind = LoadedFileKind.Ddb;
 
     public string? CurrentPath { get; private set; }
@@ -132,6 +137,33 @@ public partial class MainWindowViewModel : ViewModelBase
         Properties.ReplaceAll(rows);
     }
 
+    /// <summary>
+    /// Selects the definition with the given ID in the tree (used by click-through
+    /// reference links). No-op if the ID doesn't resolve to a loaded definition.
+    /// </summary>
+    public void NavigateToDefinition(uint id)
+    {
+        var target = DefinitionMgrClass.Find_Definition(id, twiddle: false);
+        if (target is null || !_definitionNodes.TryGetValue(target, out var node))
+            return;
+
+        // A live search filter may be hiding the target; clear it so the node is reachable.
+        if (SearchText.Length > 0)
+        {
+            SearchText = "";        // clears the box (and schedules a debounced re-filter)
+            _searchDebounce.Stop();  // cancel it — we reset the filter synchronously below
+            foreach (var root in RootNodes)
+                ApplyFilter(root, "");
+        }
+
+        // Expand the ancestor chain so the node is realized, then select it.
+        for (var parent = node.Parent; parent is not null; parent = parent.Parent)
+            parent.IsExpanded = true;
+        node.IsVisible = true;
+
+        SelectedNode = node;
+    }
+
     /// <summary>Opens a file, dispatching to the right loader based on its extension.</summary>
     public Task OpenAsync(string path)
     {
@@ -174,6 +206,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         _loadedPackages = packages;
         _loadedChunks = [];
+        _definitionNodes = [];   // no navigable definitions in a package view
         _loadedKind = isTpi ? LoadedFileKind.Tpi : LoadedFileKind.PackagesDat;
         CurrentPath = path;
         HasFile = true;
@@ -213,6 +246,11 @@ public partial class MainWindowViewModel : ViewModelBase
             RootNodes.Add(new ChunkNodeViewModel(chunk.Label, chunk.Data, children));
         }
 
+        // Index the definition nodes by their backing definition for click-through navigation.
+        _definitionNodes = defChildren
+            .Where(n => n.Data is DefinitionClass)
+            .ToDictionary(n => (DefinitionClass)n.Data!);
+
         _loadedChunks = chunks;
         _loadedPackages = [];
         _loadedKind = LoadedFileKind.Ddb;
@@ -221,7 +259,7 @@ public partial class MainWindowViewModel : ViewModelBase
         WindowTitle = $"Objects.ddb Viewer — {System.IO.Path.GetFileName(path)}";
     }
 
-    private static void BuildProperties(object obj, List<PropertyRow> rows, string prefix = "", HashSet<object>? visited = null, int depth = 0)
+    private void BuildProperties(object obj, List<PropertyRow> rows, string prefix = "", HashSet<object>? visited = null, int depth = 0)
     {
         if (depth > 4) return;
         visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
@@ -261,6 +299,12 @@ public partial class MainWindowViewModel : ViewModelBase
         foreach (var field in DefinitionReflection.GetAllInstanceFields(type))
         {
             string name = prefix == "" ? field.Name : $"{prefix}.{field.Name}";
+            if (depth == 0 && field.FieldType == typeof(int) &&
+                DefinitionReferences.IsReference(type, field.Name))
+            {
+                rows.Add(MakeReferenceRow(name, (int)(field.GetValue(obj) ?? 0)));
+                continue;
+            }
             if (schema is not null &&
                 DefinitionEditor.TryAddRows(rows, name, field.Name, field.FieldType, () => field.GetValue(obj), v => field.SetValue(obj, v), schema))
                 continue;
@@ -281,7 +325,23 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private static void AddMemberValue(List<PropertyRow> rows, string name, object? value, HashSet<object> visited, int depth)
+    // Builds a row for an int that references another definition by ID. When the target
+    // resolves to a loaded definition, the row is a click-through link; otherwise it's a
+    // plain read-only row noting the ID couldn't be resolved.
+    private PropertyRow MakeReferenceRow(string name, int id)
+    {
+        if (id == 0)
+            return new PropertyRow(name, "0 (none)");
+
+        var target = DefinitionMgrClass.Find_Definition((uint)id, twiddle: false);
+        if (target is null || !_definitionNodes.ContainsKey(target))
+            return new PropertyRow(name, $"{id} (not found)");
+
+        string display = $"{id} → {target.Get_Name()} [{target.GetType().Name}]";
+        return new PropertyRow(name, display, () => NavigateToDefinition((uint)id));
+    }
+
+    private void AddMemberValue(List<PropertyRow> rows, string name, object? value, HashSet<object> visited, int depth)
     {
         if (value is null)
         {

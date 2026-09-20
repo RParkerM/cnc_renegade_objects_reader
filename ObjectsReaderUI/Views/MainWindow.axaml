@@ -105,6 +105,15 @@
                                                       SelectedItem="{Binding Value, Mode=TwoWay}"
                                                       HorizontalAlignment="Stretch" Padding="6,2"
                                                       IsVisible="{Binding IsChoice}"/>
+                                            <Button Command="{Binding NavigateCommand}"
+                                                    IsVisible="{Binding IsLink}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Padding="6,2" Cursor="Hand"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Value}"
+                                                           Foreground="#2563EB"
+                                                           TextDecorations="Underline"/>
+                                            </Button>
                                         </Panel>
                                     </Border>
                                 </Grid>

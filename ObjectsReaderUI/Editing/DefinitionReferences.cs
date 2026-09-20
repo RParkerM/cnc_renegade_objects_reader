@@ -1,4 +1,6 @@
+using RenData;            // DoorPhysDefClass
 using RenData.Definitions;
+using RenData.EditorDef;  // TileDefinitionClass
 using RenData.GameObjDef;
 
 namespace ObjectsReaderUI.Editing;
@@ -20,15 +22,44 @@ public static class DefinitionReferences
     [
         (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.PrimaryAmmoDefID)),
         (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.SecondaryAmmoDefID)),
+        (typeof(AmmoDefinitionClass), nameof(AmmoDefinitionClass.BeaconDefID)),
         (typeof(AmmoDefinitionClass), nameof(AmmoDefinitionClass.ExplosionDefID)),
         (typeof(AmmoDefinitionClass), nameof(AmmoDefinitionClass.FireSoundDefID)),
+        (typeof(AmmoDefinitionClass), nameof(AmmoDefinitionClass.ContinuousSoundDefID)),
         (typeof(ExplosionDefinitionClass), nameof(ExplosionDefinitionClass.PhysDefID)),
         (typeof(ExplosionDefinitionClass), nameof(ExplosionDefinitionClass.SoundDefID)),
+        (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.EjectPhysDefID)),
+        (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.MuzzleFlashPhysDefID)),
+        (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.ReloadSoundDefID)),
+        (typeof(WeaponDefinitionClass), nameof(WeaponDefinitionClass.EmptySoundDefID)),
         // WeaponDefID / SecondaryWeaponDefID are protected fields on ArmedGameObjDef;
         // assignability matching makes these cover every armed object (vehicles, soldiers,
         // buildings, bosses, ...).
         (typeof(ArmedGameObjDef), "WeaponDefID"),
         (typeof(ArmedGameObjDef), "SecondaryWeaponDefID"),
+        // PhysDefID is protected on PhysicalGameObjDef, the base of every physical object,
+        // so assignability matching covers all of them at once (same idea as WeaponDefID).
+        (typeof(PhysicalGameObjDef), "PhysDefID"),
+        // Remaining ...DefID references. Non-public/inherited fields are given as literals.
+        (typeof(BeaconGameObjDef), "ArmedSoundDefID"),
+        (typeof(BeaconGameObjDef), "PreDetonateCinematicDefID"),
+        (typeof(BeaconGameObjDef), "PostDetonateCinematicDefID"),
+        (typeof(BeaconGameObjDef), "ExplosionDefID"),
+        (typeof(CinematicGameObjDef), "SoundDefID"),
+        (typeof(AirStripGameObjDef), "CinematicDefID"),
+        (typeof(DoorPhysDefClass), "OpenSoundDefID"),
+        (typeof(DoorPhysDefClass), "CloseSoundDefID"),
+        (typeof(DoorPhysDefClass), "UnlockSoundDefID"),
+        (typeof(DoorPhysDefClass), "AccessDeniedSoundDefID"),
+        (typeof(RepairBayGameObjDef), "RepairingStaticAnimDefID"),
+        (typeof(RefineryGameObjDef), "HarvesterDefID"),
+        (typeof(SakuraBossGameObjDef), "GattlingGunDefID"),
+        (typeof(SakuraBossGameObjDef), "RocketLauncherDefID"),
+        (typeof(SakuraBossGameObjDef), "GattlingGunRevSoundDefID"),
+        (typeof(SoldierGameObjDef), "HumanAnimOverrideDefID"),
+        (typeof(SoldierGameObjDef), "HumanLoiterCollectionDefID"),
+        (typeof(SpecialEffectsGameObjDef), "SoundDefID"),
+        (typeof(TileDefinitionClass), "m_PhysDefID"),
         // DefinitionList is a protected int[] of purchasable-item definition IDs;
         // AlternateDefinitionList is a protected int[,] of the same (entry × alternate).
         (typeof(TeamPurchaseSettingsDefClass), "DefinitionList"),

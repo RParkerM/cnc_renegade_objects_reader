@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ObjectsReaderUI.Editing;
 using RenData.Definitions;
 using RenData.Packaging;
@@ -38,6 +39,13 @@ public partial class MainWindowViewModel : ViewModelBase
     private Dictionary<DefinitionClass, ChunkNodeViewModel> _definitionNodes = [];
 
     private LoadedFileKind _loadedKind = LoadedFileKind.Ddb;
+
+    // Browser-style navigation history of visited nodes. _historyIndex points at the current
+    // entry; Back/Forward move it. _navigatingHistory suppresses re-recording while we
+    // programmatically re-select a node during a Back/Forward replay.
+    private readonly List<ChunkNodeViewModel> _history = [];
+    private int _historyIndex = -1;
+    private bool _navigatingHistory;
 
     public string? CurrentPath { get; private set; }
 
@@ -126,6 +134,11 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(SelectedDefinition));
         OnPropertyChanged(nameof(CanExportJson));
 
+        // Record every user-driven selection (tree clicks and link jumps alike) as a
+        // history entry; replays during Back/Forward set _navigatingHistory to skip this.
+        if (!_navigatingHistory && value is not null)
+            RecordHistory(value);
+
         if (value?.Data is null)
         {
             Properties.ReplaceAll([]);
@@ -147,7 +160,17 @@ public partial class MainWindowViewModel : ViewModelBase
         if (target is null || !_definitionNodes.TryGetValue(target, out var node))
             return;
 
-        // A live search filter may be hiding the target; clear it so the node is reachable.
+        SelectNode(node);
+    }
+
+    /// <summary>
+    /// Reveals a node in the tree — clearing any active search filter and expanding its
+    /// ancestor chain so a virtualized/collapsed node is realized — then selects it.
+    /// Shared by link navigation and Back/Forward history replay.
+    /// </summary>
+    private void SelectNode(ChunkNodeViewModel node)
+    {
+        // A live search filter may be hiding the node; clear it so the node is reachable.
         if (SearchText.Length > 0)
         {
             SearchText = "";        // clears the box (and schedules a debounced re-filter)
@@ -156,12 +179,70 @@ public partial class MainWindowViewModel : ViewModelBase
                 ApplyFilter(root, "");
         }
 
-        // Expand the ancestor chain so the node is realized, then select it.
         for (var parent = node.Parent; parent is not null; parent = parent.Parent)
             parent.IsExpanded = true;
         node.IsVisible = true;
 
         SelectedNode = node;
+    }
+
+    // ── Navigation history (Back/Forward) ───────────────────────────────────────
+
+    /// <summary>Appends a newly-selected node, dropping any forward entries (browser semantics).</summary>
+    private void RecordHistory(ChunkNodeViewModel node)
+    {
+        // Re-selecting the current entry (e.g. clicking the already-selected node) is a no-op.
+        if (_historyIndex >= 0 && ReferenceEquals(_history[_historyIndex], node))
+            return;
+
+        // Truncate the forward history — navigating from the middle forks a new path.
+        if (_historyIndex < _history.Count - 1)
+            _history.RemoveRange(_historyIndex + 1, _history.Count - 1 - _historyIndex);
+
+        _history.Add(node);
+        _historyIndex = _history.Count - 1;
+        NotifyHistoryCommands();
+    }
+
+    private void ClearHistory()
+    {
+        _history.Clear();
+        _historyIndex = -1;
+        NotifyHistoryCommands();
+    }
+
+    private void NotifyHistoryCommands()
+    {
+        GoBackCommand.NotifyCanExecuteChanged();
+        GoForwardCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanGoBack => _historyIndex > 0;
+    private bool CanGoForward => _historyIndex >= 0 && _historyIndex < _history.Count - 1;
+
+    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    private void GoBack()
+    {
+        if (!CanGoBack) return;
+        _historyIndex--;
+        ReplayHistory();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoForward))]
+    private void GoForward()
+    {
+        if (!CanGoForward) return;
+        _historyIndex++;
+        ReplayHistory();
+    }
+
+    // Re-selects the node at the current history index without recording it as a new entry.
+    private void ReplayHistory()
+    {
+        _navigatingHistory = true;
+        try { SelectNode(_history[_historyIndex]); }
+        finally { _navigatingHistory = false; }
+        NotifyHistoryCommands();
     }
 
     /// <summary>Opens a file, dispatching to the right loader based on its extension.</summary>
@@ -183,6 +264,7 @@ public partial class MainWindowViewModel : ViewModelBase
         RootNodes.Clear();
         Properties.Clear();
         SelectedNode = null;
+        ClearHistory();
 
         List<PackageClass> packages;
         try
@@ -219,6 +301,7 @@ public partial class MainWindowViewModel : ViewModelBase
         RootNodes.Clear();
         Properties.Clear();
         SelectedNode = null;
+        ClearHistory();
 
         List<TopLevelChunk> chunks;
         List<ChunkNodeViewModel> defChildren;

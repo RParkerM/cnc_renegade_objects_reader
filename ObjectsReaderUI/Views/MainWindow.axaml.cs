@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using ObjectsReaderUI.ViewModels;
@@ -10,6 +11,28 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    // The mouse's dedicated back/forward buttons (XButton1/XButton2) drive history,
+    // mirroring the ◀/▶ toolbar buttons and Alt+Left/Right.
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm)
+            return;
+
+        var kind = e.GetCurrentPoint(this).Properties.PointerUpdateKind;
+        var command = kind switch
+        {
+            PointerUpdateKind.XButton1Pressed => vm.GoBackCommand,
+            PointerUpdateKind.XButton2Pressed => vm.GoForwardCommand,
+            _ => null,
+        };
+
+        if (command is not null && command.CanExecute(null))
+        {
+            command.Execute(null);
+            e.Handled = true;
+        }
     }
 
     private async void OnOpenClicked(object? sender, RoutedEventArgs e)

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -139,7 +140,10 @@ public class ChunkSaveClass : IDisposable
         }
         if (source is bool b)
         {
-            return SimpleWrite((byte)(b ? 1 : 0));
+            // C++ stores bool as a single byte that may hold any value, not just 0/1. The load
+            // path reads that raw byte straight into the bool's storage, so reinterpret it here
+            // (rather than b ? 1 : 0) to reproduce the original byte exactly on save.
+            return SimpleWrite(Unsafe.As<bool, byte>(ref b));
         }
         var length = Marshal.SizeOf(source);
         byte[] output = new byte[length];

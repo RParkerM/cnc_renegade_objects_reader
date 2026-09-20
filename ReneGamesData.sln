@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		remaining defs.txt = remaining defs.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectsReaderUI.Tests", "ObjectsReaderUI.Tests\ObjectsReaderUI.Tests.csproj", "{31487D60-03F2-4694-9178-5DB414F83DCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,18 @@ Global
 		{7066E093-AE4F-4C15-8FD3-5F2BB0DC99B9}.Release|x64.Build.0 = Release|Any CPU
 		{7066E093-AE4F-4C15-8FD3-5F2BB0DC99B9}.Release|x86.ActiveCfg = Release|Any CPU
 		{7066E093-AE4F-4C15-8FD3-5F2BB0DC99B9}.Release|x86.Build.0 = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|x64.Build.0 = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Debug|x86.Build.0 = Debug|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|x64.ActiveCfg = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|x64.Build.0 = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|x86.ActiveCfg = Release|Any CPU
+		{31487D60-03F2-4694-9178-5DB414F83DCF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

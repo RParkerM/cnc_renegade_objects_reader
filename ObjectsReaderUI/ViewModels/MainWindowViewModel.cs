@@ -388,6 +388,26 @@ public partial class MainWindowViewModel : ViewModelBase
                 rows.Add(MakeReferenceRow(name, (int)(field.GetValue(obj) ?? 0)));
                 continue;
             }
+            if (depth == 0 && field.FieldType == typeof(int[]) &&
+                DefinitionReferences.IsReference(type, field.Name))
+            {
+                var ids = (int[])(field.GetValue(obj) ?? Array.Empty<int>());
+                rows.Add(new PropertyRow(name, $"[{ids.Length} items]"));
+                for (int i = 0; i < ids.Length; i++)
+                    rows.Add(MakeReferenceRow($"{name}[{i}]", ids[i]));
+                continue;
+            }
+            if (depth == 0 && field.FieldType == typeof(int[,]) &&
+                DefinitionReferences.IsReference(type, field.Name))
+            {
+                var ids = (int[,])(field.GetValue(obj) ?? new int[0, 0]);
+                int rowCount = ids.GetLength(0), colCount = ids.GetLength(1);
+                rows.Add(new PropertyRow(name, $"[{rowCount}×{colCount} items]"));
+                for (int i = 0; i < rowCount; i++)
+                    for (int j = 0; j < colCount; j++)
+                        rows.Add(MakeReferenceRow($"{name}[{i},{j}]", ids[i, j]));
+                continue;
+            }
             if (schema is not null &&
                 DefinitionEditor.TryAddRows(rows, name, field.Name, field.FieldType, () => field.GetValue(obj), v => field.SetValue(obj, v), schema))
                 continue;

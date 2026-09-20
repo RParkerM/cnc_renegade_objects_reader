@@ -54,7 +54,9 @@
 
                     <TreeView ItemsSource="{Binding RootNodes}"
                               SelectedItem="{Binding SelectedNode}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                              ScrollViewer.AllowAutoHide="False"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              >
                         <TreeView.Styles>
                             <Style Selector="TreeViewItem" x:DataType="vm:ChunkNodeViewModel">
                                 <Setter Property="IsVisible" Value="{Binding IsVisible}"/>
@@ -91,6 +93,7 @@
                     <!-- Property rows (virtualized: ListBox realizes only visible rows) -->
                     <ListBox ItemsSource="{Binding Properties}"
                              SelectionMode="Single"
+                             ScrollViewer.AllowAutoHide="False"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">

@@ -46,4 +46,32 @@ public static class FileLoader
         stream.Close();
         return result;
     }
+
+    /// <summary>
+    /// Writes the loaded chunks back out in their original file order. Mirrors the
+    /// round-trip save in the console tool: each top-level chunk re-serializes
+    /// itself, so an unedited file round-trips bit-for-bit.
+    /// </summary>
+    public static void Save(string path, IEnumerable<TopLevelChunk> chunks)
+    {
+        using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        var chunkSave = new ChunkSaveClass(stream);
+
+        foreach (var chunk in chunks)
+        {
+            chunkSave.Begin_Chunk(chunk.ChunkId);
+            switch (chunk.Data)
+            {
+                case DefinitionMgrClass defMgr:
+                    defMgr.Save(chunkSave);
+                    break;
+                case UnknownChunk unknown:
+                    unknown.Save(chunkSave);
+                    break;
+            }
+            chunkSave.End_Chunk();
+        }
+
+        stream.Flush();
+    }
 }

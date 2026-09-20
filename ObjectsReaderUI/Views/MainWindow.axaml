@@ -7,7 +7,13 @@
         x:Class="ObjectsReaderUI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding WindowTitle}"
+        PointerPressed="OnPointerPressed"
         Width="1200" Height="700">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Alt+Left"  Command="{Binding GoBackCommand}"/>
+        <KeyBinding Gesture="Alt+Right" Command="{Binding GoForwardCommand}"/>
+    </Window.KeyBindings>
 
     <DockPanel>
 
@@ -32,8 +38,15 @@
             <!-- Main content -->
             <Grid ColumnDefinitions="320,4,*">
 
-                <!-- Left: Search box + chunk tree -->
+                <!-- Left: Back/forward + search box + chunk tree -->
                 <DockPanel Grid.Column="0">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal"
+                                Margin="4,4,4,0" Spacing="4">
+                        <Button Content="◀" Command="{Binding GoBackCommand}"
+                                ToolTip.Tip="Back (Alt+Left)" Padding="10,2"/>
+                        <Button Content="▶" Command="{Binding GoForwardCommand}"
+                                ToolTip.Tip="Forward (Alt+Right)" Padding="10,2"/>
+                    </StackPanel>
                     <TextBox DockPanel.Dock="Top"
                              Text="{Binding SearchText}"
                              Watermark="Search..."
